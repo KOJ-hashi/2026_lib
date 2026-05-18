@@ -1,5 +1,5 @@
-#ifndef 2026_ARM_H
-#define 2026_ARM_H
+#ifndef ARM2026_H
+#define ARM2026_H
 
 #include "mbed.h"
 
