@@ -7,5 +7,6 @@
 #include "gm6020.h"
 #include "CANManager.h"
 #include "PID_Control.h"
+#include "RobStride.h"
 
 #endif
