@@ -1,3 +1,4 @@
+//Support by kashidawa
 #include "gm6020.h"
 #include "mbed.h"
 #include <chrono>
@@ -57,6 +58,7 @@ int gm6020::gm6020_send(int* motor) {//motorへ制御信号を送信する関数
 }
 
 void gm6020::rbms_read(CANMessage &msg, short *rotation, short *speed) {
+    _has_received = true;
     _r = (msg.data[0] << 8) | (msg.data[1] & 0xff);
     now_pos = _r; 
 
