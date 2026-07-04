@@ -9,7 +9,7 @@ public:
         VELOCITY
     };
 
-    PID_Control(T kp, T ki, T kd, T dt, T min_out, T max_out, T alpha = 0.2f);
+    PID_Control(T kp, T ki, T kd, T dt, T min_out, T max_out, T alpha = 0.2f, T tolerance = 0);
 
     void set_mode(Mode mode);
     void set_lpf_enabled(bool enabled);//不確定微分
@@ -31,6 +31,7 @@ private:
     T _prev_prev_error;
     T _low_pass_deriv;
     T _prev_output;
+    T _tolerance;
 };
 
 #endif
