@@ -12,9 +12,10 @@ public:
     PID_Control(T kp, T ki, T kd, T dt, T min_out, T max_out, T alpha = 0.2f);
 
     void set_mode(Mode mode);
-    void set_lpf_enabled(bool enabled);
-    void set_shortest_path(bool enabled); 
+    void set_lpf_enabled(bool enabled);//不確定微分
+    void set_shortest_path(bool enabled); //最短距離設定
     void set_alpha(T alpha);
+    void set_tolerance(T tolerance);//許容誤差
     T update(T target, T current);
     void reset();
 
