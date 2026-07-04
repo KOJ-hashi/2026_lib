@@ -1,4 +1,5 @@
 #include "PID_Control.h"
+#include "math.h"
 
 template <typename T>
 PID_Control<T>::PID_Control(T kp, T ki, T kd, T dt, T min_out, T max_out, T alpha)
