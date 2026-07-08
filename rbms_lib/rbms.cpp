@@ -1,6 +1,7 @@
 #include "rbms.h"
 #include "mbed.h"
 #include <cmath>
+#include <mutex>
 
 rbms::rbms(CAN &can,bool motor_type,int motor_num)
     : _can(can),_motor_type(motor_type),_motor_num(motor_num){
@@ -37,6 +38,9 @@ rbms::rbms(CAN &can,bool motor_type,int motor_num)
     if(_motor_num<=8){
         _can.frequency(1000000);
         _can.mode(CAN::Normal);
+    }
+    for(int i =0;i<8;i++){
+        _torque_limits[i] = 10000;
     }
 }
 
@@ -107,6 +111,17 @@ void rbms::set_accel_limit(int id, float max_accel) {
     if (id < 0 || id >= _motor_num) return;
     _data_mutex.lock();
     _pid_states[id].accel_limit_rpm_s = max_accel;
+    _data_mutex.unlock();
+}
+
+void rbms::set_torque_limit(int id, int max_torque){
+    if(id < 0 || id >= _motor_num)return;
+
+    if(max_torque < 0)max_torque = -max_torque;
+    if(max_torque > 10000)max_torque = 10000;
+
+    _data_mutex.lock();
+    _torque_limits[id] = max_torque;
     _data_mutex.unlock();
 }
 
@@ -266,6 +281,9 @@ void rbms::control_thread_entry() {
 
                 _data_mutex.lock();
                 _output_torques[id] = final_out;
+
+                if(_output_torques[id] > _torque_limits[id])  _output_torques[id] = _torque_limits[id];
+                if(_output_torques[id] <-_torque_limits[id])  _output_torques[id] =-_torque_limits[id];
                 _data_mutex.unlock();
             }
         }
