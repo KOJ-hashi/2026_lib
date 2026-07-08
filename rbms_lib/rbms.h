@@ -54,6 +54,8 @@ class rbms : public CANReceiver{
         void set_speed_limit(int id, float max_speed);
         // max_accel: 1秒間あたりの最大RPM変化量 (0.0fを指定すると制限なし)
         void set_accel_limit(int id, float max_accel);
+        //トルク制限
+        void set_torque_limit(int id, int max_torque);
 
         bool handle_message(const CANMessage &msg) override;
         void spd_control();
@@ -77,6 +79,7 @@ class rbms : public CANReceiver{
         int _target_torques[8];
         float _target_angles[8];
         int _output_torques[8];
+        int _torque_limits[8];
         
         // ゲイン
         float _kp, _ki, _kd;             // 速度ループ用
