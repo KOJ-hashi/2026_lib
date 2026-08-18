@@ -1,4 +1,4 @@
-# 2026_lib
+# 2026_lib~#include souten2026.h~
 
 装填用プログラム集
 Includeはsouten2026.h
