@@ -4,7 +4,7 @@
 #include <mutex>
 
 rbms::rbms(CAN &can,bool motor_type,int motor_num)
-    : _can(can),_motor_type(motor_type),_motor_num(motor_num){
+    : _can(can),_motor_type(motor_type),_motor_num(motor_num),_thread(osPriorityRealtime){
     if (_motor_type) { // M3508
         _kp = 35.0f; _ki = 50.0f; _kd = 0.0f;
         _kp_p = 5.0f; _ki_p = 0.0f; _kd_p = 0.15f;
@@ -83,6 +83,18 @@ void rbms::reset_angle(int id) {
     _target_angles[id] = 0.0f;
     _data_mutex.unlock();
 }
+
+void rbms::sync_angle(int id,float angle){
+    if(id < 0 || id >= _motor_num) return;
+    _data_mutex.lock();
+    _pid_states[id].accumulated_angle = angle;
+
+    //POSの積分、前回誤差をリセット
+    _pid_states[id].pos_integral = 0.0f;
+    _pid_states[id].pos_prev_err = 0.0f;
+
+    _data_mutex.unlock();
+    }
 
 void rbms::set_pid_gains(float kp, float ki, float kd) {
     _data_mutex.lock();
