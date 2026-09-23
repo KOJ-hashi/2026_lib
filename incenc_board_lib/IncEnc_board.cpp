@@ -1,0 +1,71 @@
+#include "IncEnc_board.h"
+#include <cstring>
+
+IncEnc_board::IncEnc_board(mbed::CAN &can, int all_node_num)
+    : _can(can), _all_node_num(all_node_num){
+    
+    // CANMessageの空オブジェクトで初期化
+    _msg_buffer.assign(_all_node_num, mbed::CANMessage());
+    
+    // 【追加】データ配列を明示的にゼロクリアし、NaN化を物理的に防ぐ
+    for (int i = 0; i < _all_node_num; ++i) {
+        std::memset(_msg_buffer[i].data, 0, 8);
+    }
+
+    _can.frequency(1e6);
+    _can.mode(mbed::CAN::Normal);
+}
+
+bool IncEnc_board::encoder_reset_node(int node){
+    CANMessage msg;
+    bool result = false;
+    msg.id   = 0x400 + node;
+    msg.len  = 1;
+    msg.data[0] = 0xff;
+    return _can.write(msg)==1;
+}
+
+bool IncEnc_board::encoder_reset_all(){
+    int reset_cnt = 0;
+    bool result = false;
+    for(int id = 1; id <= _all_node_num; id++){
+        this->encoder_reset_node(id);
+        ThisThread::sleep_for(10ms); // 適宜変更をお願いします
+    }
+    return true;
+}
+
+void IncEnc_board::conv_data_node(int64_t *angle, uint8_t node){
+    const int index = node - 1;
+    angle[index] = 0;
+    for (int i = 0; i < 8; i++) {
+        angle[index] |= (int64_t)_msg_buffer[index].data[i] << (8 * (7 - i));
+    }
+    
+}
+
+void IncEnc_board::conv_data_all(int64_t *angles){
+    for(int node = 1; node <= _all_node_num; node++) this->conv_data_node(angles, node);
+}
+
+void IncEnc_board::conv_data_node_v(float *speed, uint8_t node){
+    const int index = node - 1;
+    //speed[index] = 0.f;
+    std::memcpy(&speed[index], _msg_buffer[index].data, sizeof(float));
+    
+}
+
+void IncEnc_board::conv_data_all_v(float *speeds){
+    for(int node = 1; node <= _all_node_num; node++) this->conv_data_node_v(speeds, node);
+}
+
+bool IncEnc_board::handle_message(const mbed::CANMessage &msg){
+    int id_idx = msg.id - 0x401;
+    if (id_idx >= 0 && id_idx < _all_node_num) {
+        _data_mutex.lock();
+        _msg_buffer[id_idx] = msg;
+        _data_mutex.unlock();
+        return true;
+    }
+    return false;
+}
