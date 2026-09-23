@@ -61,7 +61,18 @@ class rbms : public CANReceiver{
         void spd_control();
         int rbms_send();
         void rbms_read(CANMessage &msg, short *rotation,short *speed);
-        
+        float get_angle(int id){
+            if(id < 0 || id >= _motor_num) return 0.0f;
+            return _pid_states[id].accumulated_angle;
+        }
+
+        float get_torque(int id){
+            if(id < 0 || id >= _motor_num) return 0.0f;
+            return _output_torques[id];
+        }
+
+        void sync_angle(int id, float angle);
+       
     private:
 
         void control_thread_entry();
